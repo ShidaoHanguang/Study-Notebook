@@ -1,32 +1,19 @@
-# 机器学习
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Mar 18 11:49:25 2024
 
-## 一、基础概念
+@author: Jerome
+"""
 
-通过**特征**形成**专家系统**，利用**算法**对**实例**进行**分类、回归**等操作的方式。
+import numpy as np
+import operator
+import os
 
+def createDataSet():
+    group = np.array([[1.0,1.1],[1.0,1.0],[0,0],[0,0.1]])
+    labels = ['A','A','B','B']
+    return group, labels
 
-
-###### 常用算法罗列
-
-|    监督学习的用途    |                          |
-| :------------------: | :----------------------: |
-|     *k*-近邻算法     |         线性回归         |
-|    朴素贝叶斯算法    |     局部加权线性回归     |
-|      支持向量机      |       *Ridge* 回归       |
-|        决策树        | *Lasso* 最小回归系数估计 |
-| **无监督学习的用途** |                          |
-|       *k*-均值       |       最大期望算法       |
-|       *DBSCAN*       |     *Parzen* 窗设计      |
-
-## 二、常用算法
-
-### 1. K-近邻算法
-
-​	存在一个样本数据集合，也称作训练样本集，并且样本集中每个数据都存在标签，即我们知道样本集中每一数据与所属分类的对应关系。输入没有标签的新数据后，将新数据的每个特征与样本集中数据对应的特征进行比较，然后算法提取样本集中特征最相似数据（最近邻）的分类标签。一般来说，我们只选择样本数据集中前*k*个最相似的数据，这就是*k*-近邻算法中*k*的出处，通常*k*是不大于20的整数。最后，选择*k*个最相似数据中出现次数最多的分类，作为新数据的分类。
-
-#### 简单距离算法构建
-
-```python
 def classify0(inX, dataSet, labels, k):
     # 获取数据集大小
     dataSetSize = dataSet.shape[0]
@@ -47,49 +34,42 @@ def classify0(inX, dataSet, labels, k):
     # 根据情况对应次数排序
     sortedClassCount = sorted(classCount.items(),key = operator.itemgetter(1),reverse = True)
     return sortedClassCount[0][0]
-```
 
-###### 
+def file2matrix(filename):
+    fr = open(filename)
+    #获取文本文件的行数
+    numberOfLines = len(fr.readlines())         
+    returnMat = np.zeros((numberOfLines,3))        
+    classLabelVector = []                       #prepare labels return   
+    index = 0
+    # 执行fr.readlines()后文件指针指向文档尾部，需要fr.seek(0)重新回到开头
+    fr.seek(0)
+    dict_label = []
+    # dict_label = {'didntLike' : 1,
+    #               'smallDoses' : 2,
+    #               'largeDoses' : 3
+    #               }
+    for line in fr.readlines():
+        # .strip()可以截去回车字符
+        line = line.strip()
+        listFromLine = line.split('\t')
+        # 矩阵读取文本每行的前三个数值
+        returnMat[index,:] = listFromLine[0:3]
+        classLabelVector.append(int(listFromLine[-1]))
+        index += 1
+    fr.close()
+    return returnMat,classLabelVector
 
-#### 从文本中获取数据及分类
-
-##### matplotlib功能展示
-
-```python
-ax.scatter(datingDataMat[:,1], datingDataMat[:,2], 15.0 * np.array(datingLabels), 15.0 * np.array(datingLabels))
-```
-
-这行代码使用 Matplotlib 的 `scatter` 函数绘制散点图。根据提供的参数，它会将 `datingDataMat` 矩阵的第二列作为 x 坐标，第三列作为 y 坐标，并根据 `datingLabels` 数组中的值来确定散点的颜色和大小。
-
-具体解释如下：
-
-- `datingDataMat[:,1]` 表示取 `datingDataMat` 矩阵的所有行的第二列作为 x 坐标。
-- `datingDataMat[:,2]` 表示取 `datingDataMat` 矩阵的所有行的第三列作为 y 坐标。
-- `15.0 * np.array(datingLabels)` 表示将 `datingLabels` 数组中的每个元素乘以 15.0，生成一个新的数组，用于设置散点的大小。
-- `ax.scatter()` 函数的前两个参数是 x 和 y 坐标，第三个参数是每个散点的大小，第四个参数是每个散点的颜色。
-
-##### 
-
-##### 标准化
-
-```python
 def autoNorm(dataSet):
-    # dataSet.min(0)表示从列中取最小值
     minVals = dataSet.min(0)
     maxVals = dataSet.max(0)
     ranges = maxVals - minVals
     normDataSet = np.zeros(np.shape(dataSet))
     m = dataSet.shape[0]
     normDataSet = dataSet - np.tile(minVals, (m,1))
-    normDataSet = normDataSet/np.tile(ranges, (m,1))   
+    normDataSet = normDataSet/np.tile(ranges, (m,1))   #element wise divide
     return normDataSet, ranges, minVals
-```
 
-
-
-##### 整体检测算法
-
-```python
 def datingClassTest(filepath,hoRatio,k):
     # 获取数据集
     datingDataMat,datingLabels = file2matrix(filepath)       #load data setfrom file
@@ -108,13 +88,7 @@ def datingClassTest(filepath,hoRatio,k):
             errorCount += 1.0
     print ("the total error rate is: {}" .format(errorCount/float(numTestVecs)))
     print (errorCount)
-```
 
-
-
-##### 简单的预测算法
-
-```python
 def classifyPerson():
     resultList = ['not at all', 'in small doses', 'in large doses']
     percentTats = float(input("请输入用于玩游戏的时间比列："))
@@ -125,13 +99,17 @@ def classifyPerson():
     inArr = np.array([ffMiles, percentTats, iceCream])
     classifierResult = classify0((inArr - minVals) / ranges, normMat, datingLabels, 3)
     print("你可能会喜欢这个人：{}".format(resultList[classifierResult - 1]))
-```
-
-
-
-#### 从图像中获取数据
-
-```python
+    
+    
+def img2vector(filename):
+    returnVect = np.zeros((1,1024))
+    fr = open(filename)
+    for i in range(32):
+        lineStr = fr.readline()
+        for j in range(32):
+            returnVect[0,32*i+j] = int(lineStr[j])
+    return returnVect
+    
 def handwritingClassTest():
     hwLabels = []
     # 读取训练数据文件夹中的文件
@@ -163,5 +141,12 @@ def handwritingClassTest():
     print("the total number of errors is: {}".format(errorCount))
     print("the total error rate is: {}".format(errorCount/float(mTest)))
     return errorlist
-```
+    
+
+
+
+
+
+
+
 
