@@ -10,7 +10,9 @@ import treePlot
 
 
 dataset, labels = mytree.createDataSet()
-a = mytree.createTree(dataset, labels)
+# a = mytree.createTree(dataset, labels)
 
 # 绘制树形图
-treePlot.createPlot()
+a = treePlot.retrieveTree(0)
+# b = treePlot.retrieveTree(1)
+treePlot.createPlot(a)
