@@ -111,6 +111,7 @@ def createPlot(inTree):
     fig.clf()
     axprops = dict(xticks=[], yticks=[])
     createPlot.ax1 = plt.subplot(111, frameon=False, **axprops)    #no ticks
+    # 以下皆为对函数对象的属性创建，目的是对一些数据进行记录，包括上次绘制节点的x、y坐标，叶节点数量和层数等
     plotTree.totalW = float(getNumLeafs(inTree))
     plotTree.totalD = float(getTreeDepth(inTree))
     plotTree.xOff = -0.5/plotTree.totalW

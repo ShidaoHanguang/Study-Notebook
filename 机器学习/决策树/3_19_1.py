@@ -8,11 +8,8 @@ Created on Tue Mar 19 11:06:05 2024
 import mytree
 import treePlot
 
-
-dataset, labels = mytree.createDataSet()
-# a = mytree.createTree(dataset, labels)
-
-# 绘制树形图
-a = treePlot.retrieveTree(0)
-# b = treePlot.retrieveTree(1)
-treePlot.createPlot(a)
+fr = open('眼镜.txt')
+lense = [line.strip().split('\t') for line in fr.readlines()]
+labels = ['年龄', '症状', '是否散光', '眼泪频率']
+tree = mytree.createTree(lense, labels)
+treePlot.createPlot(tree)
