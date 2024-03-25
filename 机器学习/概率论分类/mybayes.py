@@ -122,3 +122,110 @@ def testingNB():
     testEntry = ['stupid', 'garbage']
     thisDoc = np.array(setOfWords2Vec(myVocabList, testEntry))
     print (testEntry,'classified as: ',classifyNB(thisDoc,p0V,p1V,pAb))
+
+
+# 建立词袋模型，统计各词出现次数
+def bagOfWords2VecMN(vocabList, inputSet):
+    returnVec = [0]*len(vocabList)
+    for word in inputSet:
+        if word in vocabList:
+            returnVec[vocabList.index(word)] += 1
+    return returnVec
+
+
+# 利用正则表达式对原始文本进行切分
+def textParse(bigString):    
+    import re
+    # 正则表达式筛选，\W表示任意非字符、数字、和非_字符，+表示重复之前判据0次以上（不包含0次）
+    listOfTokens = re.split(r'\W+', bigString)
+    # 去除较小的词汇
+    return [tok.lower() for tok in listOfTokens if len(tok) > 2] 
+
+
+# 测试实例
+def spamTest(n = 10):
+    docList=[]
+    classList = []
+    fullText =[]
+    # 读原始数据
+    for i in range(1,26):
+        wordList = textParse(open(r'email/spam/{}.txt'.format(i), encoding='utf-8', errors='ignore').read())
+        docList.append(wordList)
+        fullText.extend(wordList)
+        classList.append(1)
+        wordList = textParse(open(r'email/ham/{}.txt'.format(i), encoding='utf-8', errors='ignore').read())
+        docList.append(wordList)
+        fullText.extend(wordList)
+        classList.append(0)
+    # 创建词库
+    vocabList = createVocabList(docList)
+    trainingSet = list(range(50))
+    testSet=[]           
+    # 抽取n个构建训练集
+    for i in range(n):
+        randIndex = int(np.random.uniform(0,len(trainingSet)))
+        testSet.append(trainingSet[randIndex])
+        del(trainingSet[randIndex])  
+    trainMat=[]
+    trainClasses = []
+    # 创建对应测试矩阵和分类结果
+    for docIndex in trainingSet:
+        trainMat.append(bagOfWords2VecMN(vocabList, docList[docIndex]))
+        trainClasses.append(classList[docIndex])
+    p0V,p1V,pSpam = trainNB1(np.array(trainMat),np.array(trainClasses))
+    errorCount = 0
+    # 利用测试集对分类器进行测试
+    for docIndex in testSet:        
+        wordVector = bagOfWords2VecMN(vocabList, docList[docIndex])
+        if classifyNB(np.array(wordVector),p0V,p1V,pSpam) != classList[docIndex]:
+            errorCount += 1
+            print ("classification error",docList[docIndex])
+    print ('the error rate is: ',float(errorCount)/len(testSet))
+    return float(errorCount)/len(testSet)
+
+
+def calcMostFreq(vocabList,fullText):
+    import operator
+    freqDict = {}
+    for token in vocabList:
+        freqDict[token]=fullText.count(token)
+    sortedFreq = sorted(freqDict.items(), key=operator.itemgetter(1), reverse=True) 
+    return sortedFreq[:30]       
+
+
+def localWords(feed1,feed0):
+    import feedparser
+    docList=[]; classList = []; fullText =[]
+    minLen = min(len(feed1['entries']),len(feed0['entries']))
+    print(minLen)
+    for i in range(minLen):
+        wordList = textParse(feed1['entries'][i]['summary'])
+        docList.append(wordList)
+        fullText.extend(wordList)
+        classList.append(1) 
+        wordList = textParse(feed0['entries'][i]['summary'])
+        docList.append(wordList)
+        fullText.extend(wordList)
+        classList.append(0)
+    vocabList = createVocabList(docList)#create vocabulary
+    top30Words = calcMostFreq(vocabList,fullText)   #remove top 30 words
+    for pairW in top30Words:
+        if pairW[0] in vocabList: vocabList.remove(pairW[0])
+    trainingSet = list(range(2*minLen))
+    testSet=[]          
+    for i in range(20):
+        randIndex = int(np.random.uniform(0,len(trainingSet)))
+        testSet.append(trainingSet[randIndex])
+        del(trainingSet[randIndex])  
+    trainMat=[]; trainClasses = []
+    for docIndex in trainingSet:#train the classifier (get probs) trainNB0
+        trainMat.append(bagOfWords2VecMN(vocabList, docList[docIndex]))
+        trainClasses.append(classList[docIndex])
+    p0V,p1V,pSpam = trainNB1(np.array(trainMat),np.array(trainClasses))
+    errorCount = 0
+    for docIndex in testSet:        #classify the remaining items
+        wordVector = bagOfWords2VecMN(vocabList, docList[docIndex])
+        if classifyNB(np.array(wordVector),p0V,p1V,pSpam) != classList[docIndex]:
+            errorCount += 1
+    print ('the error rate is: ',float(errorCount)/len(testSet))
+    return vocabList,p0V,p1V
