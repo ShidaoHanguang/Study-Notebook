@@ -121,10 +121,35 @@ def createTree(dataSet,labels):
     return myTree               
 
 
+# 使用决策树进行分类
+def classify(inputTree,featLabels,testVec):
+    # 获取当前判断特征名称
+    firstStr = list(inputTree.keys())[0]
+    secondDict = inputTree[firstStr]
+    # 获取特征的索引
+    featIndex = featLabels.index(firstStr)
+    key = testVec[featIndex]
+    valueOfFeat = secondDict[key]
+    # 判断对应的是字典还是值
+    if isinstance(valueOfFeat, dict): 
+        classLabel = classify(valueOfFeat, featLabels, testVec)
+    else: 
+        classLabel = valueOfFeat
+    return classLabel
 
 
+# 决策树的存储
+def storeTree(inputTree,filename):
+    import pickle
+    fw = open(filename,'wb')
+    pickle.dump(inputTree,fw)
+    fw.close()
 
-
+# 决策树的读取
+def grabTree(filename):
+    import pickle
+    fr = open(filename,'rb')
+    return pickle.load(fr)
 
 
 
