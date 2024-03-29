@@ -151,7 +151,7 @@ z = np.maximum(z, 0.)
 
 点积运算，也叫**张量积**，是最常见也最有用的张量运算。与逐元素的运算不同，它将输入张量的元素合并在一起。
 
-![张量点积](F:\Git\Study-Notebook\深度学习\material\2.1.png)
+![张量点积](/home/shidaohg/WorkPlace/Git/Study-Notebook/深度学习/material/2.1.png)
 
 
 
@@ -216,5 +216,339 @@ $$output = relu(dot(W, input) + b)$$
 
 ### 3. 神经网络入门
 
+#### 3.1神经网络深层剖析
+
+##### 3.1.1 层
+
+神经网络的基本数据结构是**层**。层是一个数据处理模块，将一个或多个输入张量转换为一个或多个输出张量。有些层是无状态的，但大多数的层是有状态的，即层的**权重**。权重是利用随机梯度下降学到的一个或多个张量，其中包含网络的**知识**。
+
+通常，简单的向量数据保存在形状为（samples, features）的2D张量中，用**密集连接层**［densely connected layer，也叫**全连接层**（fully connected layer）或**密集层**（dense layer），对应于 Keras 的 Dense 类］来处理。
+
+序列数据保存在形状为 (samples, timesteps, features) 的 3D 张量中，通常用**循环层**（recurrent layer，比如 Keras 的 LSTM 层）来处理。
+
+图像数据保存在 4D 张量中，通常用二维**卷积层**（Keras 的 Conv2D）来处理。
+
+```python
+from keras import models
+from keras import layers
+model = models.Sequential()
+# 创建一个层，只接受第一个维度大小是784的2D张量，返回一个第一个维度大小为32的张量
+model.add(layers.Dense(32, input_shape=(784,)))
+# 该层只能接受一个32维的向量
+model.add(layers.Dense(32))
+```
+
+##### 3.1.2 模型
+
+深度学习模型是层构成的**有向无环图**。
+
+最常见的例子就是层的线性堆叠，将单一输入映射为单一输出，除此以外还有一些常见的网络拓扑结构：
+
+- 双分支（two-branch）网络
+- 多头（multihead）网络
+- Inception 模块
+
+网络的拓扑结构定义了一个**假设空间**（hypothesis space）。选定了网络拓扑结构，意味着将假设空间限定为一系列特定的张量运算，将输入数据映射为输出数据，需要为这些张量运算的权重张量找到一组合适的值。
+
+##### 3.1.3 损失函数与优化器
+
+**损失函数**（**目标函数**）：在训练过程中需要将其最小化，用于衡量当前任务是否已完成。
+
+**优化器**：决定如何基于损失函数对网络进行更新，通常执行随机梯度下降（SGD）的某个变体。
+
+具有多个输出的神经网络可能具有多个损失函数（每个输出对应一个损失函数）。但是，梯度下降过程必须基于**单个**标量损失值。因此，对于具有多个损失函数的网络，需要将所有损失函数**取平均**，变为一个标量值。
+
+一些简单的关于损失函数选择方面的指导原则：
+
+- 二分类问题：二元交叉熵（binary crossentropy）损失函数
+- 多分类问题：分类交叉熵（categorical crossentropy）损失函数
+- 回归问题：均方误差（mean-squared error）损失函数
+- 序列学习问题：联结主义时序分类（CTC，connectionist temporal classification）损失函数
+
+#### 3.2 二分类问题
+
+本节使用 IMDB 数据集，它包含来自互联网电影数据库（IMDB）的 50 000 条严重两极分化的评论。数据集被分为用于训练的 25 000 条评论与用于测试的 25 000 条评论，训练集和测试集都包含 50% 的正面评论和 50% 的负面评论。
+
+##### 3.2.1 导入数据集
+
+```python
+from keras.datasets import imdb
+(train_data, train_labels), (test_data, test_labels) = imdb.load_data(num_words=10000)
+```
+
+**代码解释**：train_data与test_data是组成是各个评论，其中每种评论都已经转化成了由数字组成的列表，数字表示的是该字符的出现频率，当前示例中截取了到10000的字符，也就是说列表中的数字出现大小限定在[1，9999]之间。
+
+train_labels与test_labels代表其评论的状态，其中0表示负面，1表示正面。
+
+之后根据评论值解码相应英文单词
+
+```python
+# 获取对应字符字典
+word_index = imdb.get_word_index()
+# 将键值对调
+reverse_word_index = dict(
+    [(value, key) for (key, value) in word_index.items()])
+# 对第一句话进行解码，其中-3是因为索引0-2分别对应了一些特殊情况
+decoded_review = ' '.join(
+    [reverse_word_index.get(i - 3, '?') for i in train_data[0]])
+```
+
+**代码解释**：因为原来字符字典是单词对应频率的格式，而data中存储的都是频率数字，因此需要通过键值对换，用于快速根据数字查询对应字符。
+
+##### 3.2.2 数据集处理
+
+```python
+import numpy as np
+def vectorize_sequences(sequences, dimension=10000):
+    results = np.zeros((len(sequences), dimension))
+    # 将数据集整合到一个2D张量内
+    for i, sequence in enumerate(sequences):
+        results[i, sequence] = 1.
+    return results
+x_train = vectorize_sequences(train_data)
+x_test = vectorize_sequences(test_data)
+y_train = np.asarray(train_labels).astype('float32')
+y_test = np.asarray(test_labels).astype('float32')
+```
+
+##### 3.2.3 构建网络
+
+###### 定义模型
+
+```python
+from keras import models
+from keras import layers
+# 定义模型的各层
+model = models.Sequential()
+# 全连接层的参数（16）是该层隐藏单元的个数，一个隐藏单元（hidden unit）是该层表示空间的一个维度。
+model.add(layers.Dense(16, activation='relu', input_shape=(10000,)))
+model.add(layers.Dense(16, activation='relu'))
+model.add(layers.Dense(1, activation='sigmoid'))
+```
+
+###### 配置器优化
+
+```python
+from keras import optimizers
+# optimizers是一种优化器
+model.compile(optimizer=optimizers.RMSprop(lr=0.001),
+				loss='binary_crossentropy',
+				metrics=['accuracy'])
+```
+
+###### 使用自定义的损失和指标
+
+```python
+from keras import losses
+from keras import metrics
+model.compile(optimizer=optimizers.RMSprop(lr=0.001),
+				loss=losses.binary_crossentropy,
+				metrics=[metrics.binary_accuracy])
+```
+
+###### 训练模型
+
+```python
+x_val = x_train[:10000]
+partial_x_train = x_train[10000:]
+y_val = y_train[:10000]
+partial_y_train = y_train[10000:]
+model.compile(optimizer='rmsprop',
+				loss='binary_crossentropy',
+				metrics=['acc'])
+#x_val，y_val是用于验证的验证集，监控模型在前所未见的数据上的精度
+history = model.fit(partial_x_train,
+					partial_y_train,
+					epochs=20,
+					batch_size=512,
+					validation_data=(x_val, y_val))
+```
+
+###### 绘制损失图像
+
+```python
+import matplotlib.pyplot as plt
+history_dict = history.history
+loss_values = history_dict['loss']
+val_loss_values = history_dict['val_loss']
+
+epochs = range(1, len(loss_values) + 1)
+# ‘bo’表示蓝色圆点
+plt.plot(epochs, loss_values, 'bo', label='Training loss')
+# 'b'表示蓝色实线
+plt.plot(epochs, val_loss_values, 'b', label='Validation loss')
+# 绘制训练及验证损失
+plt.title('Training and validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+```
+
+```python
+plt.clf()
+acc = history_dict['acc']
+val_acc = history_dict['val_acc']
+plt.plot(epochs, acc, 'bo', label='Training acc')
+plt.plot(epochs, val_acc, 'b', label='Validation acc')
+# 绘制训练及验证精度
+plt.title('Training and validation accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
+```
+
+其图像结果如下所示：
+
+![image-20240329155046940](/home/shidaohg/WorkPlace/Git/Study-Notebook/深度学习/material/3_1.png)
+
+**注意事项**：从验证集精度看，其实第四轮训练时已经有了较好的精度，但在之后的训练中对于验证集的检测精度在波动降低，这其实就是**过拟合**。对于训练数据的过度优化，反而会使得模型更贴合训练数据，无法泛化到训练集之外的数据。
+
+###### 重新开始训练模型
+
+```python
+model = models.Sequential()
+model.add(layers.Dense(16, activation='relu', input_shape=(10000,)))
+model.add(layers.Dense(16, activation='relu'))
+model.add(layers.Dense(1, activation='sigmoid'))
+model.compile(optimizer='rmsprop',
+				loss='binary_crossentropy',
+				metrics=['accuracy'])
+# 这次只进行4轮训练
+model.fit(x_train, y_train, epochs=4, batch_size=512)
+results = model.evaluate(x_test, y_test)
+```
 
 
+
+#### 3.4 多分类问题
+
+```python
+from keras.datasets import reuters
+
+(train_data, train_labels), (test_data, test_labels) = reuters.load_data(num_words=10000)
+
+len(train_data)
+
+len(test_data)
+
+import numpy as np
+
+
+def vectorize_sequences(sequences, dimension=10000):
+    results = np.zeros((len(sequences), dimension))
+    for i, sequence in enumerate(sequences):
+        results[i, sequence] = 1.
+    return results
+
+
+x_train = vectorize_sequences(train_data)
+x_test = vectorize_sequences(test_data)
+
+
+def to_one_hot(labels, dimension=46):
+    results = np.zeros((len(labels), dimension))
+    for i, label in enumerate(labels):
+        results[i, label] = 1.
+    return results
+
+
+one_hot_train_labels = to_one_hot(train_labels)
+one_hot_test_labels = to_one_hot(test_labels)
+
+one_hot_train_labels.shape
+
+from tensorflow.keras.utils import to_categorical
+
+one_hot_train_labels = to_categorical(train_labels)
+one_hot_test_labels = to_categorical(test_labels)
+
+one_hot_train_labels.shape
+
+from keras import models
+from keras import layers
+
+model = models.Sequential()
+model.add(layers.Dense(64, activation='relu', input_shape=(10000,)))
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(46, activation='softmax'))
+
+model.compile(optimizer='rmsprop',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+x_val = x_train[:1000]
+partial_x_train = x_train[1000:]
+y_val = one_hot_train_labels[:1000]
+partial_y_train = one_hot_train_labels[1000:]
+
+history = model.fit(partial_x_train,
+                    partial_y_train,
+                    epochs=20,
+                    batch_size=512,
+                    validation_data=(x_val, y_val))
+
+import matplotlib.pyplot as plt
+
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs = range(1, len(loss) + 1)
+plt.plot(epochs, loss, 'bo', label='Training loss')
+plt.plot(epochs, val_loss, 'b', label='Validation loss')
+plt.title('Training and validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+plt.clf()
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+plt.plot(epochs, acc, 'bo', label='Training acc')
+plt.plot(epochs, val_acc, 'b', label='Validation acc')
+plt.title('Training and validation accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
+
+model = models.Sequential()
+model.add(layers.Dense(64, activation='relu', input_shape=(10000,)))
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(46, activation='softmax'))
+model.compile(optimizer='rmsprop',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+model.fit(partial_x_train,
+          partial_y_train,
+          epochs=16,
+          batch_size=512,
+          validation_data=(x_val, y_val))
+results = model.evaluate(x_test, one_hot_test_labels)
+
+import copy
+
+test_labels_copy = copy.copy(test_labels)
+np.random.shuffle(test_labels_copy)
+hits_array = np.array(test_labels) == np.array(test_labels_copy)
+float(np.sum(hits_array)) / len(test_labels)
+
+predictions = model.predict(x_test)
+```
+
+大部分情况同二分类问题类似，但还是存在一些注意事项：
+
+- 如果要对 N 个**类别**的数据点进行分类，网络的最后一层应该是大小为 N 的 Dense 层。
+
+- 对于单标签、多分类问题，网络的最后一层应该使用 softmax 激活，这样可以输出在 N个输出类别上的**概率分布**。
+
+- 这种问题的损失函数几乎总是应该使用分类交叉熵。它将网络输出的概率分布与目标的真实分布之间的距离最小化。
+
+- 处理多分类问题的标签有两种方法：
+
+  - 通过分类编码（ 也叫one-hot编码）对标签进行编码，然后使用categorical_crossentropy作为损失函数。
+
+  - 将标签编码为整数，然后使用 sparse_categorical_crossentropy 损失函数。
+
+#### 3.5 回归问题
