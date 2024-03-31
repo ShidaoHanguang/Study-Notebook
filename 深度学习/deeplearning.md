@@ -552,3 +552,185 @@ predictions = model.predict(x_test)
   - 将标签编码为整数，然后使用 sparse_categorical_crossentropy 损失函数。
 
 #### 3.5 回归问题
+
+回归问题比起分类问题，预测的是一个连续值而不是离散的标签，因此对应损失函数要进行修改。
+
+##### 3.5.1 导入数据集
+
+```python
+from keras.datasets import boston_housing
+(train_data, train_targets), (test_data, test_targets) = boston_housing.load_data()
+mean = train_data.mean(axis=0)
+#数据标准化，对输入值的每个特征，先减去特征平均值，再除以标准差，得到的平均值平均值为0，标准差为1，实现标准化
+train_data -= mean
+std = train_data.std(axis=0)
+train_data /= std
+test_data -= mean
+test_data /= std
+```
+
+##### 3.5.2 构建网络
+
+```python
+from keras import models
+from keras import layers
+def build_model():
+    model = models.Sequential()
+    model.add(layers.Dense(64, activation='relu',input_shape=(train_data.shape[1],)))
+    model.add(layers.Dense(64, activation='relu'))
+    model.add(layers.Dense(1))
+    #使用mse损失函数，即均方误差，预测值与目标值之差的平方
+    #同时使用的指标为mae平均绝对误差，指的是预测值与目标值之差的绝对值
+    model.compile(optimizer='rmsprop', loss='mse', metrics=['mae'])
+    return model
+```
+
+##### 3.5.3 K折验证
+
+在训练集数据较少的情况下，如果想要划分出训练集和验证集，可以参考使用**K折交叉验证**。这种方法将可用数据划分为 K个分区（K 通常取 4 或 5），实例化 K 个相同的模型，将每个模型在 K-1 个分区上训练，并在剩下的一个分区上进行评估。模型的验证分数等于 K 个验证分数的平均值。
+
+![image-20240331205034369](/home/shidaohg/WorkPlace/Git/Study-Notebook/深度学习/material/3_2.png)
+
+```python
+import numpy as np
+k = 4
+#地板除法，除后只保留整数部分
+num_val_samples = len(train_data) // k
+num_epochs = 100
+all_scores = []
+#进行k次验证
+for i in range(k):
+    print('processing fold #', i)
+    #划分验证集
+    val_data = train_data[i * num_val_samples: (i + 1) * num_val_samples]
+    val_targets = train_targets[i * num_val_samples: (i + 1) * num_val_samples]
+    #剩下的划分训练集
+    partial_train_data = np.concatenate(
+                [train_data[:i * num_val_samples],
+                train_data[(i + 1) * num_val_samples:]],axis=0)
+    partial_train_targets = np.concatenate(
+        		[train_targets[:i * num_val_samples],
+        		train_targets[(i + 1) * num_val_samples:]],axis=0)
+    model = build_model()
+    #开始训练，epochs表示取样次数，batch_size表示一次取样量，verbose取0表示静默模式
+    model.fit(partial_train_data, partial_train_targets,
+        epochs=num_epochs, batch_size=1, verbose=0)
+    val_mse, val_mae = model.evaluate(val_data, val_targets, verbose=0)
+    all_scores.append(val_mae)
+```
+
+之后，可以考虑增大取样次数，增大训练量
+
+```python
+num_epochs = 500
+all_mae_histories = []
+for i in range(k):
+    print('processing fold #', i)
+    val_data = train_data[i * num_val_samples: (i + 1) * num_val_samples]
+    val_targets = train_targets[i * num_val_samples: (i + 1) * num_val_samples]
+    partial_train_data = np.concatenate(
+        [train_data[:i * num_val_samples],
+        train_data[(i + 1) * num_val_samples:]],
+        axis=0)
+
+    partial_train_targets = np.concatenate(
+        [train_targets[:i * num_val_samples],
+        train_targets[(i + 1) * num_val_samples:]],
+        axis=0)
+
+    model = build_model()
+    history = model.fit(partial_train_data, partial_train_targets,
+                        validation_data=(val_data, val_targets),
+                        epochs=num_epochs, batch_size=1, verbose=0)
+    mae_history = history.history['val_mae']
+    all_mae_histories.append(mae_history)
+```
+
+##### 3.5.4 绘制图像
+
+```python
+average_mae_history = [np.mean([x[i] for x in all_mae_histories]) for i in range(num_epochs)]
+
+import matplotlib.pyplot as plt
+plt.plot(range(1, len(average_mae_history) + 1), average_mae_history)
+plt.xlabel('Epochs')
+plt.ylabel('Validation MAE')
+plt.show()
+```
+
+```python
+#绘制平滑曲线，factor参数控制平滑的程度
+def smooth_curve(points, factor=0.9):
+    smoothed_points = []
+    for point in points:
+        if smoothed_points:
+            previous = smoothed_points[-1]
+            #计算当前数据点与上一个数据点的加权平均
+            smoothed_points.append(previous * factor + point * (1 - factor))
+        else:
+            smoothed_points.append(point)
+    return smoothed_points
+
+#删除前10个点
+smooth_mae_history = smooth_curve(average_mae_history[10:])
+plt.plot(range(1, len(smooth_mae_history) + 1), smooth_mae_history)
+plt.xlabel('Epochs')
+plt.ylabel('Validation MAE')
+plt.show()
+```
+
+### 4 机器学习基础
+
+#### 4.1 机器学习的四个分支
+
+##### 4.1.1 监督学习
+
+监督学习指给定一组样本（通常由人工标注），学会将输入数据映射到已知目标（也叫**标注**）。
+
+监督学习主要包括各种分类和回归，同时还有很多的奇特变体，主要包括以下：
+
+- **序列生成**（sequence generation）：给定一张图像，预测描述图像的文字。序列生成有时可以被重新表示为一系列分类问题，比如反复预测序列中的单词或标记。
+- **语法树预测**（syntax tree prediction）：给定一个句子，预测其分解生成的语法树。
+- **目标检测**（object detection）：给定一张图像，在图中特定目标的周围画一个边界框。这个问题也可以表示为分类问题（给定多个候选边界框，对每个框内的目标进行分类）或分类与回归联合问题（用向量回归来预测边界框的坐标）。
+- **图像分割**（image segmentation）：给定一张图像，在特定物体上画一个像素级的掩模（mask）。
+
+##### 4.1.2 无监督学习
+
+**无监督学习**是指在没有目标的情况下寻找输入数据的变换，其目的在于数据可视化、数据压缩、数据去噪或更好地理解数据中的相关性。无监督学习是数据分析的必备技能，在解决监督学习问题之前，为了更好地了解数据集，它通常是一个必要步骤。**降维**（dimensionalityreduction）和**聚类**（clustering）都是众所周知的无监督学习方法。
+
+##### 4.1.3 自监督学习
+
+自监督学习是没有人工标注的标签的监督学习，标签从输入数据中自动生成，通常是通过启发式算法获得。
+
+**自编码器**就是一种自监督学习的例子，其生成的目标就是未经修改的输入。此外，通过给定视频中过去的帧预测下一帧，或者给定文本中前面的词来预测下一个词，也都是自监督学习的例子（也可以划分为**时序监督学习**）。
+
+##### 4.1.4 强化学习
+
+在强化学习中，**智能体**（agent）接收有关其环境的信息，并学会选择使某种奖励最大化的行动。例如，神经网络会“观察”视频游戏的屏幕并输出游戏操作，目的是尽可能得高分，这种神经网络可以通过强化学习来训练。
+
+##### 4.1.5 分类和回归的术语表
+
+- **样本**（sample）或**输入**（input）：进入模型的数据点。
+- **预测**（prediction）或输出（output）：从模型出来的结果。
+- **目标**（target）：真实值。对于外部数据源，理想情况下，模型应该能够预测出目标。
+- **预测误差**（prediction error）或**损失值**（loss value）：模型预测与目标之间的距离。
+- **类别**（class）：分类问题中供选择的一组标签。例如，对猫狗图像进行分类时，“狗”和“猫”就是两个类别。
+- **标签**（label）：分类问题中类别标注的具体例子。比如，如果 1234 号图像被标注为包含类别“狗”，那么“狗”就是 1234 号图像的标签。
+- **真值**（ground-truth）或**标注**（annotation）：数据集的所有目标，通常由人工收集。
+- **二分类**（binary classification）：一种分类任务，每个输入样本都应被划分到两个互斥的类别中。
+- **多分类**（multiclass classification）：一种分类任务，每个输入样本都应被划分到两个以上的类别中，比如手写数字分类。
+- **多标签分类**（multilabel classification）：一种分类任务，每个输入样本都可以分配多个标签。举个例子，如果一幅图像里可能既有猫又有狗，那么应该同时标注“猫”标签和“狗”标签。每幅图像的标签个数通常是可变的。
+- **标量回归**（scalar regression）：目标是连续标量值的任务。预测房价就是一个很好的例子，不同的目标价格形成一个连续的空间。
+- **向量回归**（vector regression）：目标是一组连续值（比如一个连续向量）的任务。如果对多个值（比如图像边界框的坐标）进行回归，那就是向量回归。
+- **小批量**（mini-batch）或批量（batch）：模型同时处理的一小部分样本（样本数通常为 8~128）。样本数通常取 2 的幂，这样便于 GPU 上的内存分配。训练时，小批量用来为模型权重计算一次梯度下降更新。
+
+
+
+#### 4.2 评估
+
+在例子中，经过几轮训练，模型都很快出现**过拟合**，其在训练数据上的性能始终在提高，但在前所未见的数据上的性能则有所下降。机器学习的目的是得到泛化的模型，需要通过衡量模型泛化能力，进一步降低过拟合带来的负面影响。
+
+##### 4.2.1 数据划分
+
+评估模型重点在于将数据划分为三个集合：训练集、验证集和测试集。之所以不单单使用训练集和测试集，是因为在开发模型时对模型配置需要通过在验证集上的性能作为调节信号，用来测验模型的过拟合情况。
+

@@ -5,18 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="87f90e2d-e051-4c3e-a719-157f027d7f26" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/dl_lib/IMDB_test.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dl_lib/jupyter2py.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dl_lib/layer1.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dl_lib/multiclass_test.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dl_lib/regression_test.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dl_test/3_29_1.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../books/Python 深度学习.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/../books/Python 深度学习.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/深度学习.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/深度学习.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/deeplearning.md" beforeDir="false" afterPath="$PROJECT_DIR$/deeplearning.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dl1/1.py" beforeDir="false" afterPath="$PROJECT_DIR$/dl1/1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dl_lib/regression_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/dl_lib/regression_test.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,7 +60,7 @@
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.rainbow.brackets.disable.when&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -81,7 +73,7 @@
     </option>
     <option name="myUseExistingConsole" value="true" />
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.IMDB_test.ipynb">
     <configuration name="IMDB_test.ipynb" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="深度学习" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -178,6 +170,11 @@
       <workItem from="1711680993698" duration="5206000" />
       <workItem from="1711692381164" duration="5117000" />
       <workItem from="1711702682594" duration="3146000" />
+      <workItem from="1711803264817" duration="60000" />
+      <workItem from="1711857288365" duration="923000" />
+      <workItem from="1711858636893" duration="7000" />
+      <workItem from="1711858668576" duration="636000" />
+      <workItem from="1711886561425" duration="2514000" />
     </task>
     <servers />
   </component>
