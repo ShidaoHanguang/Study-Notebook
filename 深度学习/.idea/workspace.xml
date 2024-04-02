@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="87f90e2d-e051-4c3e-a719-157f027d7f26" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/dl_lib/movie_test_opti.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deeplearning.md" beforeDir="false" afterPath="$PROJECT_DIR$/deeplearning.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dl_lib/movie_test_opti.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/dl_lib/movie_test_opti.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -175,6 +174,8 @@
       <workItem from="1711858668576" duration="636000" />
       <workItem from="1711886561425" duration="2514000" />
       <workItem from="1711936258949" duration="1226000" />
+      <workItem from="1711976052052" duration="882000" />
+      <workItem from="1712063472491" duration="599000" />
     </task>
     <servers />
   </component>
