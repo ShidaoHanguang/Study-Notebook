@@ -5,8 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="87f90e2d-e051-4c3e-a719-157f027d7f26" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/dl_lib/VGG_test.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dl_lib/VGG_test_2.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dl_lib/dogcat_dataget.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dl_lib/dong_cat_detect.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dl_lib/visiable_2.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dl_lib/visiable_test.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dl_lib/movie_test_opti.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/dl_lib/movie_test_opti.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deeplearning_2.md" beforeDir="false" afterPath="$PROJECT_DIR$/deeplearning_2.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,27 +47,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Python.1.executor&quot;: &quot;Run&quot;,
-    &quot;Python.3_27_3.executor&quot;: &quot;Run&quot;,
-    &quot;Python.example1.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/shidaohg/WorkPlace/Git/Study-Notebook/深度学习&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.rainbow.brackets.disable.when&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python.1.executor": "Run",
+    "Python.3_27_3.executor": "Run",
+    "Python.example1.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "/home/shidaohg/WorkPlace/毕设",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "Jupyter Settings",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
       <console-settings module-name="深度学习" is-module-sdk="true">
@@ -176,6 +182,12 @@
       <workItem from="1711936258949" duration="1226000" />
       <workItem from="1711976052052" duration="882000" />
       <workItem from="1712063472491" duration="599000" />
+      <workItem from="1712125194018" duration="2256000" />
+      <workItem from="1712127459313" duration="4327000" />
+      <workItem from="1712562773922" duration="710000" />
+      <workItem from="1712643001021" duration="6338000" />
+      <workItem from="1712651654047" duration="4645000" />
+      <workItem from="1712715493661" duration="6491000" />
     </task>
     <servers />
   </component>
